@@ -10,10 +10,11 @@ public class PullUpWall extends MonoBehaviour {
 	private var source : AudioSource;
 	public var Controller : OVRInput.Controller;
 
-	private playedWallSound : bool = false;
+	private var playedWallSound : boolean = false;
 
 	function Awake() {
-		source = GetComponent<AudioSource> ();
+		source = GetComponent.<AudioSource> ();
+
 	}
 
 	// Update is called once per frame
@@ -28,7 +29,7 @@ public class PullUpWall extends MonoBehaviour {
 		if (Input.GetAxis("RHandTrigger") == 1 || Input.GetAxis("LHandTrigger") == 1) {
 			//Debug.Log ("Right");
 			//createRockWall();
-			transform.localPosition = OVRInput.GetLocalControllerPosition(Controller);
+			//transform.localPosition = OVRInput.GetLocalControllerPosition(Controller);
 
 			playSound();
 

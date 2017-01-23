@@ -15,6 +15,8 @@ public class TouchController extends MonoBehaviour {
 	//public GameObject Player;
   public var Player : GameObject;
 
+  public var Hand : String;
+
 	//private Transform toLane;
   //private var 
 
@@ -24,7 +26,7 @@ public class TouchController extends MonoBehaviour {
   
   private var wallCooldownCounterMax : int = 1000;
   private var wallCooldownCounter : int = 1000;
-  private var wallCooldown : bool = false;
+  private var wallCooldown : boolean = false;
 
 
 
@@ -36,30 +38,6 @@ public class TouchController extends MonoBehaviour {
 
 		//Debug.Log (wallCooldownCounter.ToString ());
 
-
-		if (Input.GetAxis("RHandTrigger") == 1 || Input.GetAxis("LHandTrigger") == 1) {
-			//Debug.Log ("Right");
-			if (!wallCooldown){
-				Debug.Log (transform.position.ToString ());
-        
-        var dir : Vector3 = Player.transform.position - transform.position;
-        dir = Player.transform.InverseTransformDirection(dir);
-        var angle : float = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-
-        var radius : float = 5f;
-        var newPointLocation : Vector2 = GetPointOnCircle(transform.position, radius, angle);
-				//Vector3 direction = (toLane.transform.position - transform.position).normalized;
-				//Vector3 distance = Vector3.Distance(
-
-				GameObject createdWall = Instantiate(wall, newPointLocation, Quaternion.identity) as GameObject;
-				wallCooldown = true;
-			}
-
-
-
-
-		}
-
 		if (wallCooldown) {
 			wallCooldownCounter--;
 			if (wallCooldownCounter < 0) {
@@ -68,15 +46,58 @@ public class TouchController extends MonoBehaviour {
 			}
 		}
 
+		if (Input.GetAxis(Hand+"HandTrigger") == 1){
+			pullUpWall("Hand: " + Hand);
+		}
+
+		//if (Input.GetAxis(Hand+"HandTrigger") == 1){
+		//	pullUpWall("Left");
+		//}
+
+
+
+
 
 		if (Input.GetButtonDown("Fire1")) {
 		}
 
 	}
+
+	function pullUpWall(hand : String){
+	//if (Input.GetAxis("RHandTrigger") == 1 || Input.GetAxis("LHandTrigger") == 1) {
+			//Debug.Log ("Right");
+			Debug.Log("hand: " + hand);
+			if (!wallCooldown){
+				//Debug.Log (transform.position.ToString ());
+        		wallCooldown = true;
+		        var dir : Vector3 = Player.transform.position - transform.position;
+		        dir = Player.transform.InverseTransformDirection(dir);
+		        var angle : float = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+		        Debug.Log("transform.position: " + transform.position);
+
+		        var radius : float = 5f;
+		        var newPointLocation : Vector2 = GetPointOnCircle(transform.position, radius, angle);
+				//Vector3 direction = (toLane.transform.position - transform.position).normalized;
+				//Vector3 distance = Vector3.Distance(
+				var test : Vector3 = new Vector3(2.5,-1.25,0);
+				//Debug.Log("test: " + test);
+
+				var createdWall : GameObject = Instantiate(wall, test, Quaternion.identity) as GameObject;
+
+			}
+
+
+
+
+		//}
+
+
+	}
   
-   Vector2 GetPointOnCircle(Vector2 origin, float radius, float angle) {
+   function GetPointOnCircle(origin : Vector2, radius : float , angle : float ) {
  
-        float angleInRadians = angle * Mathf.Deg2Rad;
+        var angleInRadians : float = angle * Mathf.Deg2Rad;
  
         var x = origin.x + radius * Mathf.Sin(angleInRadians);
         var y = origin.y + radius * Mathf.Cos(angleInRadians);
