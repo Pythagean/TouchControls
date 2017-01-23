@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿import UnityEngine;
+import System.Collections;
 
 public class TouchController extends MonoBehaviour {
 //public class TouchController : MonoBehaviour {
@@ -41,12 +41,17 @@ public class TouchController extends MonoBehaviour {
 			//Debug.Log ("Right");
 			if (!wallCooldown){
 				Debug.Log (transform.position.ToString ());
-
         
+        var dir : Vector3 = Player.transform.position - transform.position;
+        dir = Player.transform.InverseTransformDirection(dir);
+        var angle : float = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+        var radius : float = 5f;
+        var newPointLocation : Vector2 = GetPointOnCircle(transform.position, radius, angle);
 				//Vector3 direction = (toLane.transform.position - transform.position).normalized;
 				//Vector3 distance = Vector3.Distance(
 
-				GameObject createdWall = Instantiate(wall, transform.position, Quaternion.identity) as GameObject;
+				GameObject createdWall = Instantiate(wall, newPointLocation, Quaternion.identity) as GameObject;
 				wallCooldown = true;
 			}
 
