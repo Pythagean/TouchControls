@@ -2,28 +2,15 @@
 import System.Collections;
 
 public class TouchController extends MonoBehaviour {
-//public class TouchController : MonoBehaviour {
 
-	//public AudioClip rockSound;
   public var rockSound : AudioClip;
-	//public GameObject wall;
   public var wall : GameObject;
-	//public OVRInput.Controller Controller;
   public var Controller : OVRInput.Controller;
-	//private AudioSource source;
   public var source : AudioSource;
-	//public GameObject Player;
   public var Player : GameObject;
 
   public var Hand : String;
 
-	//private Transform toLane;
-  //private var 
-
-	//private int wallCooldownCounterMax = 1000;
-	//private int wallCooldownCounter = 1000;
-	//private bool wallCooldown = false;
-  
   private var wallCooldownCounterMax : int = 1000;
   private var wallCooldownCounter : int = 1000;
   private var wallCooldown : boolean = false;
@@ -31,12 +18,9 @@ public class TouchController extends MonoBehaviour {
 
 
 	// Update is called once per frame
-	//void Update () {
   function Update() {
 		transform.localPosition = OVRInput.GetLocalControllerPosition(Controller);
 		transform.localRotation = OVRInput.GetLocalControllerRotation(Controller);
-
-		//Debug.Log (wallCooldownCounter.ToString ());
 
 		if (wallCooldown) {
 			wallCooldownCounter--;
@@ -47,53 +31,56 @@ public class TouchController extends MonoBehaviour {
 		}
 
 		if (Input.GetAxis(Hand+"HandTrigger") == 1){
-			pullUpWall("Hand: " + Hand);
+			handTriggerPull("Hand: " + Hand);
 		}
-
-		//if (Input.GetAxis(Hand+"HandTrigger") == 1){
-		//	pullUpWall("Left");
-		//}
-
-
-
-
 
 		if (Input.GetButtonDown("Fire1")) {
 		}
 
 	}
 
-	function pullUpWall(hand : String){
-	//if (Input.GetAxis("RHandTrigger") == 1 || Input.GetAxis("LHandTrigger") == 1) {
-			//Debug.Log ("Right");
-			Debug.Log("hand: " + hand);
+	function handTriggerPull(hand : String){
+    
+    var distance : float = Vector3.Distance (Player.transform.position, transform.position);
+    var isAbove : boolean = isAbove(Player, Controller)
+    
+			Debug.Log("hand: " + hand + ", distance to player: " + distance.toString() + " isAbove: " + isAbove.toString());
 			if (!wallCooldown){
-				//Debug.Log (transform.position.ToString ());
         		wallCooldown = true;
-		        var dir : Vector3 = Player.transform.position - transform.position;
-		        dir = Player.transform.InverseTransformDirection(dir);
-		        var angle : float = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+		        //var dir : Vector3 = Player.transform.position - transform.position;
+		        //dir = Player.transform.InverseTransformDirection(dir);
+		        //var angle : float = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
-		        Debug.Log("transform.position: " + transform.position);
+		       // Debug.Log("transform.position: " + transform.position);
 
-		        var radius : float = 5f;
-		        var newPointLocation : Vector2 = GetPointOnCircle(transform.position, radius, angle);
-				//Vector3 direction = (toLane.transform.position - transform.position).normalized;
-				//Vector3 distance = Vector3.Distance(
-				var test : Vector3 = new Vector3(2.5,-1.25,0);
-				//Debug.Log("test: " + test);
+		        //var radius : float = 5f;
+		        //var newPointLocation : Vector2 = GetPointOnCircle(transform.position, radius, angle);
 
-				var createdWall : GameObject = Instantiate(wall, test, Quaternion.identity) as GameObject;
+            var spawnPointWall : Vector3 = getSpawnPointAlongLine(Player, Controller, -1.25, 2);
+            var createdWall : GameObject = Instantiate(wall, spawnPointWall, Quaternion.identity) as GameObject;
 
 			}
 
-
-
-
-		//}
-
-
 	}
+  
+  function getSpawnPointAlongLine(player : GameObject, controller : OVRInput.Controller, height : float, distance : float) {
+    var player_x : player.transform.position.x,
+        player_z : player.transform.position.z,
+        controller_x : float = controller.transform.position.x,
+        controller_z : float = controller.transform.position.z;
+        
+    var new_x : float = controller_x - player_x,
+        new_z : float = controller_z - player_z;
+        
+    return new Vector3(new_x, height, new_z);
+  }
+  
+  function isAbove(player : GameObject, controller : OVRInput.Controller) {
+    var player_y : float = player.transform.position.y,
+        controller_y : float = controller.transform.position.y;
+    return controller_y > player_y;
+  }
+  
   
    function GetPointOnCircle(origin : Vector2, radius : float , angle : float ) {
  
