@@ -8,6 +8,7 @@ public class TouchController extends MonoBehaviour {
   public var Controller : OVRInput.Controller;
   public var source : AudioSource;
   public var Player : GameObject;
+  public var PlayerHead : Camera;
 
   public var Hand : String;
 
@@ -41,12 +42,18 @@ public class TouchController extends MonoBehaviour {
 
 	function handTriggerPull(hand : String){
     
-    var distance : float = Vector3.Distance (Player.transform.position, transform.position);
-    var isAbove : boolean = isAbove(Player, Controller)
+
     
-			Debug.Log("hand: " + hand + ", distance to player: " + distance.toString() + " isAbove: " + isAbove.toString());
+			//Debug.Log("hand: " + hand + ", distance to player: " + distance.toString() + " isAbove: " + isAbove.toString());
 			if (!wallCooldown){
-        		wallCooldown = true;
+
+				wallCooldown = true;
+
+				var distance : float = Vector3.Distance (Player.transform.position, transform.position);
+				var isAbove : boolean = isAbove(PlayerHead, Controller);
+
+				Debug.Log("isAbove: " + isAbove);
+
 		        //var dir : Vector3 = Player.transform.position - transform.position;
 		        //dir = Player.transform.InverseTransformDirection(dir);
 		        //var angle : float = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
@@ -56,28 +63,28 @@ public class TouchController extends MonoBehaviour {
 		        //var radius : float = 5f;
 		        //var newPointLocation : Vector2 = GetPointOnCircle(transform.position, radius, angle);
 
-            var spawnPointWall : Vector3 = getSpawnPointAlongLine(Player, Controller, -1.25, 2);
-            var createdWall : GameObject = Instantiate(wall, spawnPointWall, Quaternion.identity) as GameObject;
+            	var spawnPointWall : Vector3 = getSpawnPointAlongLine(PlayerHead, Controller, -1.25, 3);
+            	var createdWall : GameObject = Instantiate(wall, spawnPointWall, Quaternion.identity) as GameObject;
 
 			}
 
 	}
   
-  function getSpawnPointAlongLine(player : GameObject, controller : OVRInput.Controller, height : float, distance : float) {
-    var player_x : player.transform.position.x,
-        player_z : player.transform.position.z,
-        controller_x : float = controller.transform.position.x,
-        controller_z : float = controller.transform.position.z;
+  function getSpawnPointAlongLine(player : Camera, controller : OVRInput.Controller, height : float, distance : float) {
+    var player_x : float = player.transform.position.x;
+    var player_z : float = player.transform.position.z;
+    var controller_x : float = OVRInput.GetLocalControllerPosition(controller).x;
+    var controller_z : float = OVRInput.GetLocalControllerPosition(controller).z;
         
-    var new_x : float = controller_x - player_x,
-        new_z : float = controller_z - player_z;
+    var new_x : float = (controller_x - player_x) * distance;
+    var new_z : float = (controller_z - player_z) * distance;
         
     return new Vector3(new_x, height, new_z);
   }
   
-  function isAbove(player : GameObject, controller : OVRInput.Controller) {
-    var player_y : float = player.transform.position.y,
-        controller_y : float = controller.transform.position.y;
+  function isAbove(player : Camera, controller : OVRInput.Controller) {
+    var player_y : float = player.transform.position.y;
+    var controller_y : float = OVRInput.GetLocalControllerPosition(controller).y;
     return controller_y > player_y;
   }
   
