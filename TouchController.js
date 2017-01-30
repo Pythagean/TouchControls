@@ -16,19 +16,46 @@ public class TouchController extends MonoBehaviour {
   private var bendingCooldownCounter : int = 500;
   private var bendingCooldown : boolean = false;
 
+  private var averageHeight1 : int = 0;
+  private var averageHeight1Counter : int = 0;
+  private var averageHeight2 : int = 0;
+  private var averageHeight2Counter : int = 0;
+  private var averageHeight3 : int = 0;
+  private var averageHeight2Counter : int = 0;
+  
   private var holdingWall : boolean = false;
   private var spawnedWall : GameObject;
   private var isAboveBool : boolean;
-
+  
+  private var distanceFromHead : float;
+  private var isMovingDown : boolean = false;
+  private var gripping : boolean = false;
+  private var startingPosition : String = "";
 
 
 	// Update is called once per frame
   function Update() {
 		transform.localPosition = OVRInput.GetLocalControllerPosition(Controller);
 		transform.localRotation = OVRInput.GetLocalControllerRotation(Controller);
+    
+    var controller_y : int = OVRInput.GetLocalControllerPosition(Controller).y;
 
-		isAboveBool = isAbove(PlayerHead, Controller);
-
+    distanceFromHead = Vector3.Distance (Player.transform.position, transform.position);
+    isAboveBool = isAbove(PlayerHead, Controller);
+    
+    updateAverageHeights();
+    
+    if (averageHeight1 < averageHeight2 && averageHeight2 < averageHeight3){
+      isMovingDown = false;
+    } else if (averageHeight1 > averageHeight2 && averageHeight2 > averageHeight3) {
+      isMovingDown = true;
+    }
+    Debug.Log("isMovingDown: " + isMovingDown)
+    
+    
+    
+    
+    
 		if (bendingCooldown) {
 			bendingCooldownCounter--;
 			if (bendingCooldownCounter < 0) {
@@ -37,9 +64,22 @@ public class TouchController extends MonoBehaviour {
 			}
 		}
 
-		if (Input.GetAxis("LHandTrigger") == 1 && Input.GetAxis("RHandTrigger") == 1){
-			bothTriggersPull();
+		if (Input.GetAxis(Hand+"HandTrigger") == 1){
+      gripping = true;
+      
+      if (isAboveBool){
+        startingPosition = "above_head";
+      } else {
+        startingPosition = "below_head";
+      }
+      
+			handTriggerPull("Hand: " + Hand);
 		}
+    
+    if (Input.GetAxis(Hand+"HandTrigger") != 1){
+      gripping = false;
+		}
+    
 
 
 		/*if (Input.GetAxis(Hand+"HandTrigger") == 1){
@@ -56,7 +96,7 @@ public class TouchController extends MonoBehaviour {
 	function bothTriggersPull(){
 		if (!bendingCooldown){
 			bendingCooldown = true;
-			if (!isAbove){
+			if (!isAboveBool){
 				Debug.Log("TEST");
 				PlayerHead.transform.position.y = OVRInput.GetLocalControllerPosition(Controller).y * 2;
 			}
@@ -77,18 +117,88 @@ public class TouchController extends MonoBehaviour {
 					var distance : float = Vector3.Distance (Player.transform.position, transform.position);
 
 
-					Debug.Log("isAbove: " + isAbove);
+					Debug.Log("isAbove: " + isAboveBool);
 
 	            	var spawnPointWall : Vector3 = getSpawnPointAlongLine(PlayerHead, Controller, -1.25, 3);
 	            	spawnedWall = Instantiate(wall, spawnPointWall, Quaternion.identity) as GameObject;
 
 				}
 
+    
+			//Debug.Log("hand: " + hand + ", distance to player: " + distanceFromHead.toString() + " isAbove: " + isAbove.toString());
+			
+			if (holdingWall){
+				spawnedWall.transform.position.y = OVRInput.GetLocalControllerPosition(Controller).y * 2;
+			} else {
+			
+			if (!bendingCooldown){
+
+				bendingCooldown = true;
+        
+          if (startingPosition == "above_head"){
+            if (isMovingDown && !isAboveBool){
+              Debug.Log("Started above head, moved down to below head");
+            }
+          } else if (startingPosition == "below_head"){
+            if (!isMovingDown && isAboveBool){
+              Debug.Log("Started below head, moved up to above head");
+            }
+          }
+
+
+          var spawnPointWall : Vector3 = getSpawnPointAlongLine(PlayerHead, Controller, -1.25, 3);
+          var createdWall : GameObject = Instantiate(wall, spawnPointWall, Quaternion.identity) as GameObject;
+			}
+
 			}
     
 			//Debug.Log("hand: " + hand + ", distance to player: " + distance.toString() + " isAbove: " + isAbove.toString());
 
 	}
+  
+  function updateAverageHeights(){
+    
+    if (averageHeight1Counter == 20 && averageHeight2Counter == 20 &&averageHeight3Counter == 20){
+      averageHeight1Counter = 0;
+    } else if (averageHeight1Counter == 20){
+      averageHeight2Counter = 0;
+    } else if (averageHeight1Counter == 20 && averageHeight2Counter == 20){
+      averageHeight3Counter = 0;
+    }
+   
+    
+    if (averageHeight1Counter == 0){
+      averageHeight1 = controller_y;
+      averageHeight1Counter++;
+    } else if (averageHeight1Counter < 21) {
+      averageHeight1 = averageHeight1 * averageHeight1Counter;
+      averageHeight1Counter++;
+      averageHeight1 += controller_y;
+      averageHeight1 = averageHeight1 / averageHeight1Counter;
+    } else {
+      if (averageHeight2Counter == 0){
+        averageHeight2 = controller_y;
+        averageHeight2Counter++;
+      } else if (averageHeight2Counter < 21) {
+        averageHeight2 = averageHeight2 * averageHeight2Counter;
+        averageHeight2Counter++;
+        averageHeight2 += controller_y;
+        averageHeight2 = averageHeight2 / averageHeight2Counter;
+      } else {
+        if (averageHeight3Counter == 0){
+          averageHeight3 = controller_y;
+          averageHeight3Counter++;
+        } else if (averageHeight3Counter < 21) {
+          averageHeight3 = averageHeight3 * averageHeight3Counter;
+          averageHeight3Counter++;
+          averageHeight3 += controller_y;
+          averageHeight3 = averageHeight3 / averageHeight3Counter;
+        }
+      }
+    }
+    Debug.Log("Avg Heights: " + averageHeight1 + ", " + averageHeight2 + ", " + averageHeight3);
+    
+  }
   
   function getSpawnPointAlongLine(player : Camera, controller : OVRInput.Controller, height : float, distance : float) {
     var player_x : float = player.transform.position.x;
