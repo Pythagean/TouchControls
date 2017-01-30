@@ -12,9 +12,13 @@ public class TouchController extends MonoBehaviour {
 
   public var Hand : String;
 
-  private var wallCooldownCounterMax : int = 1000;
-  private var wallCooldownCounter : int = 1000;
-  private var wallCooldown : boolean = false;
+  private var bendingCooldownCounterMax : int = 500;
+  private var bendingCooldownCounter : int = 500;
+  private var bendingCooldown : boolean = false;
+
+  private var holdingWall : boolean = false;
+  private var spawnedWall : GameObject;
+  private var isAboveBool : boolean;
 
 
 
@@ -23,50 +27,66 @@ public class TouchController extends MonoBehaviour {
 		transform.localPosition = OVRInput.GetLocalControllerPosition(Controller);
 		transform.localRotation = OVRInput.GetLocalControllerRotation(Controller);
 
-		if (wallCooldown) {
-			wallCooldownCounter--;
-			if (wallCooldownCounter < 0) {
-				wallCooldownCounter = wallCooldownCounterMax;
-				wallCooldown = false;
+		isAboveBool = isAbove(PlayerHead, Controller);
+
+		if (bendingCooldown) {
+			bendingCooldownCounter--;
+			if (bendingCooldownCounter < 0) {
+				bendingCooldownCounter = bendingCooldownCounterMax;
+				bendingCooldown = false;
 			}
 		}
 
-		if (Input.GetAxis(Hand+"HandTrigger") == 1){
-			handTriggerPull("Hand: " + Hand);
+		if (Input.GetAxis("LHandTrigger") == 1 && Input.GetAxis("RHandTrigger") == 1){
+			bothTriggersPull();
 		}
+
+
+		/*if (Input.GetAxis(Hand+"HandTrigger") == 1){
+			handTriggerPull("Hand: " + Hand);
+		} else {
+			holdingWall = false;
+		}*/
 
 		if (Input.GetButtonDown("Fire1")) {
 		}
 
 	}
 
+	function bothTriggersPull(){
+		if (!bendingCooldown){
+			bendingCooldown = true;
+			if (!isAbove){
+				Debug.Log("TEST");
+				PlayerHead.transform.position.y = OVRInput.GetLocalControllerPosition(Controller).y * 2;
+			}
+		}
+	}
+
 	function handTriggerPull(hand : String){
-    
 
-    
-			//Debug.Log("hand: " + hand + ", distance to player: " + distance.toString() + " isAbove: " + isAbove.toString());
-			if (!wallCooldown){
+			if (holdingWall){
+				spawnedWall.transform.position.y = OVRInput.GetLocalControllerPosition(Controller).y * 2;
+			} else {
 
-				wallCooldown = true;
+				if (!bendingCooldown){
 
-				var distance : float = Vector3.Distance (Player.transform.position, transform.position);
-				var isAbove : boolean = isAbove(PlayerHead, Controller);
+					bendingCooldown = true;
+					holdingWall = true;
 
-				Debug.Log("isAbove: " + isAbove);
+					var distance : float = Vector3.Distance (Player.transform.position, transform.position);
 
-		        //var dir : Vector3 = Player.transform.position - transform.position;
-		        //dir = Player.transform.InverseTransformDirection(dir);
-		        //var angle : float = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
-		       // Debug.Log("transform.position: " + transform.position);
+					Debug.Log("isAbove: " + isAbove);
 
-		        //var radius : float = 5f;
-		        //var newPointLocation : Vector2 = GetPointOnCircle(transform.position, radius, angle);
+	            	var spawnPointWall : Vector3 = getSpawnPointAlongLine(PlayerHead, Controller, -1.25, 3);
+	            	spawnedWall = Instantiate(wall, spawnPointWall, Quaternion.identity) as GameObject;
 
-            	var spawnPointWall : Vector3 = getSpawnPointAlongLine(PlayerHead, Controller, -1.25, 3);
-            	var createdWall : GameObject = Instantiate(wall, spawnPointWall, Quaternion.identity) as GameObject;
+				}
 
 			}
+    
+			//Debug.Log("hand: " + hand + ", distance to player: " + distance.toString() + " isAbove: " + isAbove.toString());
 
 	}
   
