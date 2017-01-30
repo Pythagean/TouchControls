@@ -17,11 +17,11 @@ public class TouchController extends MonoBehaviour {
   private var bendingCooldown : boolean = false;
 
   private var averageHeight1 : int = 0;
-  private var averageHeight1Counter : int = 0;
+  private var averageHeight1Counter : int = 20;
   private var averageHeight2 : int = 0;
-  private var averageHeight2Counter : int = 0;
+  private var averageHeight2Counter : int = 20;
   private var averageHeight3 : int = 0;
-  private var averageHeight2Counter : int = 0;
+  private var averageHeight3Counter : int = 20;
   
   private var holdingWall : boolean = false;
   private var spawnedWall : GameObject;
@@ -31,6 +31,8 @@ public class TouchController extends MonoBehaviour {
   private var isMovingDown : boolean = false;
   private var gripping : boolean = false;
   private var startingPosition : String = "";
+  private var controller_y : int;
+  private var controller_vector : Vector3;
 
 
 	// Update is called once per frame
@@ -38,9 +40,12 @@ public class TouchController extends MonoBehaviour {
 		transform.localPosition = OVRInput.GetLocalControllerPosition(Controller);
 		transform.localRotation = OVRInput.GetLocalControllerRotation(Controller);
     
-    var controller_y : int = OVRInput.GetLocalControllerPosition(Controller).y;
+    controller_vector = transform.TransformPoint(transform.position);
+    controller_y = controller_vector.y;
+    Debug.Log("controller_y: " + controller_y);
 
     distanceFromHead = Vector3.Distance (Player.transform.position, transform.position);
+    //Debug.Log("distanceFromHead: " + distanceFromHead);
     isAboveBool = isAbove(PlayerHead, Controller);
     
     updateAverageHeights();
@@ -50,7 +55,7 @@ public class TouchController extends MonoBehaviour {
     } else if (averageHeight1 > averageHeight2 && averageHeight2 > averageHeight3) {
       isMovingDown = true;
     }
-    Debug.Log("isMovingDown: " + isMovingDown)
+    Debug.Log("isMovingDown: " + isMovingDown);
     
     
     
@@ -135,19 +140,19 @@ public class TouchController extends MonoBehaviour {
 
 				bendingCooldown = true;
         
-          if (startingPosition == "above_head"){
-            if (isMovingDown && !isAboveBool){
-              Debug.Log("Started above head, moved down to below head");
-            }
-          } else if (startingPosition == "below_head"){
-            if (!isMovingDown && isAboveBool){
-              Debug.Log("Started below head, moved up to above head");
-            }
-          }
+		          if (startingPosition == "above_head"){
+		            if (isMovingDown && !isAboveBool){
+		              Debug.Log("Started above head, moved down to below head");
+		            }
+		          } else if (startingPosition == "below_head"){
+		            if (!isMovingDown && isAboveBool){
+		              Debug.Log("Started below head, moved up to above head");
+		            }
+		          }
 
 
-          var spawnPointWall : Vector3 = getSpawnPointAlongLine(PlayerHead, Controller, -1.25, 3);
-          var createdWall : GameObject = Instantiate(wall, spawnPointWall, Quaternion.identity) as GameObject;
+          //var spawnPointWall : Vector3 = getSpawnPointAlongLine(PlayerHead, Controller, -1.25, 3);
+          //var createdWall : GameObject = Instantiate(wall, spawnPointWall, Quaternion.identity) as GameObject;
 			}
 
 			}
@@ -155,18 +160,33 @@ public class TouchController extends MonoBehaviour {
 			//Debug.Log("hand: " + hand + ", distance to player: " + distance.toString() + " isAbove: " + isAbove.toString());
 
 	}
+	}
   
   function updateAverageHeights(){
     
-    if (averageHeight1Counter == 20 && averageHeight2Counter == 20 &&averageHeight3Counter == 20){
+    /*if (averageHeight1Counter == 20 && averageHeight2Counter == 20 &&averageHeight3Counter == 20){
       averageHeight1Counter = 0;
     } else if (averageHeight1Counter == 20){
       averageHeight2Counter = 0;
     } else if (averageHeight1Counter == 20 && averageHeight2Counter == 20){
       averageHeight3Counter = 0;
+    }*/
+
+    if (averageHeight3Counter > 20 && averageHeight1Counter > 20){
+    	averageHeight1Counter = 0;
     }
+    if (averageHeight1Counter > 20 && averageHeight2Counter > 20){
+    	averageHeight2Counter = 0;
+    }
+    if (averageHeight2Counter > 20 && averageHeight3Counter > 20){
+    	averageHeight3Counter = 0;
+    }
+
+
+
+
    
-    
+
     if (averageHeight1Counter == 0){
       averageHeight1 = controller_y;
       averageHeight1Counter++;
@@ -197,6 +217,7 @@ public class TouchController extends MonoBehaviour {
       }
     }
     Debug.Log("Avg Heights: " + averageHeight1 + ", " + averageHeight2 + ", " + averageHeight3);
+   // Debug.Log("Avg Heights Counters: " + averageHeight1Counter + ", " + averageHeight2Counter + ", " + averageHeight3Counter);
     
   }
   
