@@ -49,7 +49,7 @@ public class TouchController extends MonoBehaviour {
 
     controller_vector = transform.TransformPoint(transform.position);
     controller_y = controller_vector.y;
-    Debug.Log("controller_y: " + controller_y);
+   // Debug.Log("controller_y: " + controller_y);
 
     distanceFromHead = Vector3.Distance (Player.transform.position, transform.position);
     //Debug.Log("distanceFromHead: " + distanceFromHead);
@@ -83,8 +83,14 @@ public class TouchController extends MonoBehaviour {
         startingPosition = "below_head";
       }
 
+      Debug.Log("startingPosition: " + startingPosition);
+
       handTriggerPull("Hand: " + Hand);
+      Debug.Log("spawnedWall.transform.position: " + spawnedWall.transform.position);
+    } else {
+    	holdingWall = false;
     }
+
 
     if (Input.GetAxis(Hand+"HandTrigger") != 1){
       gripping = false;
@@ -98,23 +104,34 @@ public class TouchController extends MonoBehaviour {
   function handTriggerPull(hand : String){
 
     if (holdingWall){
-      spawnedWall.transform.position.y = OVRInput.GetLocalControllerPosition(Controller).y * 2;
+    //Debug.Log("spawnedWall.transform.position.y " + spawnedWall.transform.position.y );
+      //spawnedWall.transform.position.y = OVRInput.GetLocalControllerPosition(Controller).y * 2;
     } else {
 
       if (!bendingCooldown){
 
         bendingCooldown = true;
-        holdingWall = true;
+
 
         if (startingPosition == "below_head" && !isMovingDown){
+      //  Debug.Log("PlayerHead: " + PlayerHead.transform);
+       // Debug.Log("Controller: " + OVRInput.GetLocalControllerPosition(Controller));
           var spawnPointWall : Vector3 = getSpawnPointAlongLine(PlayerHead, Controller, -1.25, 4);
+         // Debug.Log("spawnPointWall: "  + spawnPointWall);
           spawnedWall = Instantiate(wall, spawnPointWall, Quaternion.identity) as GameObject;
+         // spawnedWall = Instantiate(wall, spawnPointWall, true) as GameObject;
+          //spawnedWall.transform.SetParent(transform, false);
+
+          Debug.Log("initial spawnedWall.transform.position: " + spawnedWall.transform.position);
+          holdingWall = true;
         }
         
         if (startingPosition == "above_head" && isMovingDown && !isAboveBool){
           var spawnPointRock : Vector3 = getSpawnPointAlongLine(PlayerHead, Controller, -1.25, 2);
           spawnedRock = Instantiate(rock, spawnPointRock, Quaternion.identity) as GameObject;
         }
+
+
        
 
         /*if (startingPosition == "above_head"){
@@ -131,7 +148,7 @@ public class TouchController extends MonoBehaviour {
     }
 
     }
-  }
+  
 
   function updateAverageHeights(){
 
